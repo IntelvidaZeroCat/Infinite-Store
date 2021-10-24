@@ -1,34 +1,21 @@
 local reqenv = function() return (getgenv() or _G) end
 
-if reqenv()["IS_LOADED"] then
-	notify("Infinite Store", "Infinite Store is already executed, a button can be found to open it in IY Settings", 5)
-	error("Infinite Store is already running!", 0)
-	return
-end
-pcall(function() reqenv()["IS_LOADED"] = true end)
-
-if not reqenv()["IY_LOADED"] then loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'), true))() end
-
-local InfStoreBtn = makeSettingsButton("Infinite Store", "rbxassetid://2161586955")
-InfStoreBtn.Position = UDim2.new(0, 5, 0, 235)
-InfStoreBtn.Size = UDim2.new(1, -10, 0, 25)
-InfStoreBtn.Name = "InfStore"
-InfStoreBtn.Parent = SettingsHolder
-SettingsHolder.CanvasSize = UDim2.new(0, 0, 0, 265)
-
 
 local IS_Settings = {
-	["_V"] = ("1.3"),
-	["InvCode"] = ("mVzBU7GTMy"),
+	["Version"] = ("1.3.1"),
+	["Invite"] = ("mVzBU7GTMy"),
 	["Plugins"] = loadstring(game:HttpGet(("https://raw.githubusercontent.com/Infinite-Store/Infinite-Store/main/db.lua"), true))(),
 	["NsfwPlugins"] = loadstring(game:HttpGet(("https://raw.githubusercontent.com/Infinite-Store/Infinite-Store/main/plugins/nsfwplugins/db.lua"), true))()
 }
 
 
 local _UserSettings = {
-	AutoVisible = false,
-	CleanPlugins = false,
+	StartMinimized = false,
+	SafeMode = false,
+	NoNotifications = false,
 }
+
+if not reqenv()["IY_LOADED"] then loadstring(game:HttpGet(("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"), true))() end
 
 local DefaultSettings = game:GetService("HttpService"):JSONEncode(_UserSettings)
 local SaveFileName = "infinite-store.json"
@@ -41,8 +28,9 @@ LoadSettings = function()
 			if readfile(SaveFileName) ~= nil then
 				local success, response = pcall(function()
 					local json = game:GetService("HttpService"):JSONDecode(readfile(SaveFileName))
-					if json.AutoVisible ~= nil then _UserSettings.AutoVisible = json.AutoVisible else _UserSettings.AutoVisible = false end
-					if json.CleanPlugins ~= nil then _UserSettings.CleanPlugins = json.CleanPlugins else _UserSettings.CleanPlugins = false end
+					if json.StartMinimized ~= nil then _UserSettings.StartMinimized = json.StartMinimized else _UserSettings.StartMinimized = false end
+					if json.SafeMode ~= nil then _UserSettings.SafeMode = json.SafeMode else _UserSettings.SafeMode = false end
+					if json.NoNotifications ~= nil then _UserSettings.NoNotifications = json.NoNotifications else _UserSettings.NoNotifications = false end
 				end)
 				if not success then
 					warn("Save Json Error:", response)
@@ -63,13 +51,15 @@ LoadSettings = function()
 				LoadSettings()
 			else
 				NoSaving = true
-				_UserSettings.AutoVisible = false
-				_UserSettings.CleanPlugins = false
+				_UserSettings.StartMinimized = false
+				_UserSettings.SafeMode = false
+				_UserSettings.NoNotifications = false
 			end
 		end
 	else
-		_UserSettings.AutoVisible = false
-		_UserSettings.CleanPlugins = false
+		_UserSettings.StartMinimized = false
+		_UserSettings.SafeMode = false
+		_UserSettings.NoNotifications = false
 	end
 end
 
@@ -78,11 +68,27 @@ LoadSettings()
 local UpdateSettings = function()
 	if NoSaving == false and writefileExploit() then
 		local update = {
-			AutoVisible = _UserSettings.AutoVisible;
+			StartMinimized = _UserSettings.StartMinimized;
+			SafeMode = _UserSettings.SafeMode;
+			NoNotifications = _UserSettings.NoNotifications;
 		}
 		writefileCooldown(SaveFileName, game:GetService("HttpService"):JSONEncode(update))
 	end
 end
+
+if reqenv()["IS_LOADED"] then
+	 if _UserSettings.NoNotifications == false then notify("Infinite Store", "Infinite Store is already executed, a button can be found to open it in IY Settings", 5) end
+	error("Infinite Store is already running!", 0)
+	return
+end
+pcall(function() reqenv()["IS_LOADED"] = true end)
+
+local InfStoreBtn = makeSettingsButton("Infinite Store", "rbxassetid://2161586955")
+InfStoreBtn.Position = UDim2.new(0, 5, 0, 235)
+InfStoreBtn.Size = UDim2.new(1, -10, 0, 25)
+InfStoreBtn.Name = "InfStore"
+InfStoreBtn.Parent = SettingsHolder
+SettingsHolder.CanvasSize = UDim2.new(0, 0, 0, 265)
 
 
 local newRandomString = function()
@@ -94,7 +100,7 @@ local newRandomString = function()
 	return table.concat(array)
 end
 
-local UserInputService = game:GetService('UserInputService')
+local UserInputService = game:GetService("UserInputService")
 
 local CoreGui = game:GetService("CoreGui")
 local ServerParent = nil
@@ -170,14 +176,14 @@ end
 
 
 mainFrame = Instance.new("Frame")
-
 dragGUI(mainFrame)
-mainFrame.Visible = _UserSettings.AutoVisible
 
-if _UserSettings.AutoVisible == true then
-	notify('Infinite Store', 'Auto Visible is turned on, this can be disabled in settings')
+if _UserSettings.StartMinimized == true then mainFrame.Visible = false else mainFrame.Visible = true end
+
+if _UserSettings.StartMinimized == true then
+	if _UserSettings.NoNotifications == false then notify("Infinite Store", "Start Minimized is turned on, Infinite Store can be opened inside of Infinite Yield's Settings") end
 else
-	notify('Infinite Store', "Auto Visible is turned off, Infinite Store can be opened inside of Infinite Yield's Settings")
+	if _UserSettings.NoNotifications == false then notify("Infinite Store", "Start Minimized is turned off, this can be disabled in settings") end
 end
 
 local TopBar = Instance.new("Frame")
@@ -260,7 +266,7 @@ mainFrame.BackgroundColor3 = Color3.fromRGB(36, 36, 37)
 mainFrame.BackgroundTransparency = 1.000
 mainFrame.BorderColor3 = Color3.fromRGB(40, 40, 40)
 mainFrame.BorderSizePixel = 0
-mainFrame.Position = UDim2.new(0.300319493, 0, 0.285551757, 0)
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
 mainFrame.Size = UDim2.new(0, 500, 0, 320)
 mainFrame.ZIndex = 10
 
@@ -1029,8 +1035,8 @@ mainFrame.TopBar.Close.MouseButton1Click:Connect(function()
 	mainFrame:TweenPosition(UDim2.new(0.5, -250, 0, -500), "InOut", "Quart", 0.5, true, nil)
 end)
 
-mainFrame.TopBar.Title.Text = ("Infinite Store v" .. IS_Settings["_V"])
-DiscordInvite.Text = (".gg/" .. IS_Settings["InvCode"])
+mainFrame.TopBar.Title.Text = ("Infinite Store v" .. IS_Settings["Version"])
+DiscordInvite.Text = (".gg/" .. IS_Settings["Invite"])
 autoCanvas(List_2, UIGridLayout)
 autoCanvas(List_3, UIGridLayout_3)
 
@@ -1067,76 +1073,76 @@ local checkBoxHandler = function(bool, obj)
 end
 
 local IS_Intro = function()
-	local tweenGoals = {TextTransparency = 0, Position = UDim2.new(0.231, 0,0, 0)}
+	local tweenGoals = {TextTransparency = 0, Position = UDim2.new(0.231, 0, 0, 0)}
 	local tweenInfo = TweenInfo.new(0.7, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.Welcome, tweenInfo, tweenGoals)
 	tween:Play()
 
 	task.wait(0.6)
 
-	local tweenGoals = {Position = UDim2.new(0.245, 0,-0.05, 0)}
+	local tweenGoals = {Position = UDim2.new(0.245, 0, -0.05, 0)}
 	local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.cart, tweenInfo, tweenGoals)
 	tween:Play()
 
-	local tweenGoals = {Position = UDim2.new(0.245, 0,-0.05, 0)}
+	local tweenGoals = {Position = UDim2.new(0.245, 0, -0.05, 0)}
 	local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.text, tweenInfo, tweenGoals)
 	tween:Play()
 
 	task.wait(1.1)
 
-	local tweenGoals = {Position = UDim2.new(0.026, 0,0.5, 0)}
+	local tweenGoals = {Position = UDim2.new(0.026, 0, 0.5, 0)}
 	local tweenInfo = TweenInfo.new(1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.Epik, tweenInfo, tweenGoals)
 	tween:Play()
 
 	task.wait(0.69420) --xd
 
-	local tweenGoals = {Position = UDim2.new(0.296, 0,0.5, 0)} --starting pos: 0.296, 0,1.09, 0
+	local tweenGoals = {Position = UDim2.new(0.296, 0, 0.5, 0)} --starting pos: 0.296, 0,1.09, 0
 	local tweenInfo = TweenInfo.new(1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.Devs, tweenInfo, tweenGoals)
 	tween:Play()
 
-	task.wait(.9)
+	task.wait(0.9)
 
-	local tweenGoals = {Position = UDim2.new(-0.07, 0,-0.05, 0)}
+	local tweenGoals = {Position = UDim2.new(-0.07, 0, -0.05, 0)}
 	local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.text, tweenInfo, tweenGoals)
 	tween:Play()
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.cart, tweenInfo, tweenGoals)
 	tween:Play()
 
-	local tweenGoals = {Position = UDim2.new(-0.07, 0,0, 0)}
+	local tweenGoals = {Position = UDim2.new(-0.07, 0, 0, 0)}
 	local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.Welcome, tweenInfo, tweenGoals)
 	tween:Play()
 
-	task.wait(.8)
+	task.wait(0.8)
 
-	local tweenGoals = {TextTransparency = 0, Position = UDim2.new(0, 0,-0.001, 0)}
-	local tweenInfo = TweenInfo.new(.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+	local tweenGoals = {TextTransparency = 0, Position = UDim2.new(0, 0, -0.001, 0)}
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.List.List1, tweenInfo, tweenGoals)
 	tween:Play()
 
-	task.wait(.4)
+	task.wait(0.4)
 
-	local tweenGoals = {TextTransparency = 0, Position = UDim2.new(0, 0,0.146, 0)}
-	local tweenInfo = TweenInfo.new(.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+	local tweenGoals = {TextTransparency = 0, Position = UDim2.new(0, 0, 0.146, 0)}
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.List.List2, tweenInfo, tweenGoals)
 	tween:Play()
 
-	task.wait(.4)
+	task.wait(0.4)
 
-	local tweenGoals = {TextTransparency = 0, Position = UDim2.new(0, 0,0.292, 0)}
-	local tweenInfo = TweenInfo.new(.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+	local tweenGoals = {TextTransparency = 0, Position = UDim2.new(0, 0, 0.292, 0)}
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.List.List3, tweenInfo, tweenGoals)
 	tween:Play()
 
-	task.wait(.4)
+	task.wait(0.4)
 
-	local tweenGoals = {TextTransparency = 0, Position = UDim2.new(0, 0,0.439, 0)}
-	local tweenInfo = TweenInfo.new(.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+	local tweenGoals = {TextTransparency = 0, Position = UDim2.new(0, 0, 0.439, 0)}
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local tween = tweenService:Create(mainFrame.ListHolder.Home.List.List4, tweenInfo, tweenGoals)
 	tween:Play()
 
@@ -1181,12 +1187,27 @@ local tweenColor3 = function(instance, rgb, t1me)
 	tween:Play()
 end
 
+local settingsList = mainFrame.ListHolder.Settings.List
+local nsfwPluginsTable = IS_Settings["NsfwPlugins"]
+
+local cleanPluginCheck = function()
+	if _UserSettings.SafeMode == true then
+		for index,plgin in pairs(nsfwPluginsTable) do
+			mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. " " .. plgin.Creator .. " " .. plgin.CreationDate)].Visible = false
+		end
+	else
+		for index,plgin in pairs(nsfwPluginsTable) do
+			mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. " " .. plgin.Creator .. " " .. plgin.CreationDate)].Visible = true
+		end
+	end
+end
 
 
-local ObjectHolder = mainFrame:WaitForChild('ListHolder'):WaitForChild('Plugins'):WaitForChild('List')
-local searchBox = mainFrame:WaitForChild('ListHolder'):WaitForChild('Plugins'):WaitForChild('SearchBar'):WaitForChild('Search')
 
-local Objects = {['Frame'] = true}
+local ObjectHolder = mainFrame:WaitForChild("ListHolder"):WaitForChild("Plugins"):WaitForChild("List")
+local searchBox = mainFrame:WaitForChild("ListHolder"):WaitForChild("Plugins"):WaitForChild("SearchBar"):WaitForChild("Search")
+
+local Objects = {["Frame"] = true}
 local Type = 1
 
 local Filter = function(Text)
@@ -1207,7 +1228,7 @@ local Filter = function(Text)
 	end
 end
 
-searchBox:GetPropertyChangedSignal('Text'):Connect(function()
+searchBox:GetPropertyChangedSignal("Text"):Connect(function()
 	local CurrentText = searchBox.Text
 
 	ObjectHolder.CanvasPosition = Vector2.new(0, 0, 0, 0)
@@ -1221,7 +1242,7 @@ searchBox:GetPropertyChangedSignal('Text'):Connect(function()
 	else
 		Filter(string.lower(CurrentText))
 	end
-		
+
 	cleanPluginCheck()
 end)
 
@@ -1229,7 +1250,7 @@ end)
 local tweeningDebounce = false
 
 for i,v in pairs(mainFrame.SideBar.Holder:GetChildren()) do
-	if v:IsA('TextButton') then
+	if v:IsA("TextButton") then
 
 		v.MouseEnter:Connect(function()
 			tweenColor2(v, openColor, 0.2)
@@ -1244,7 +1265,7 @@ for i,v in pairs(mainFrame.SideBar.Holder:GetChildren()) do
 		v.MouseButton1Click:Connect(function()
 			if tweeningDebounce == false and not mainFrame.SideBar.Holder[v.Name].cs.Value == true then tweeningDebounce = true
 				for i,v in pairs(mainFrame.SideBar.Holder:GetDescendants()) do
-					if v:IsA('TextButton') then 
+					if v:IsA("TextButton") then 
 						tweenColor2(v, closedColor, 0.2) 
 
 						local tweenGoals = {Position = pageHiddenLocation}
@@ -1254,7 +1275,7 @@ for i,v in pairs(mainFrame.SideBar.Holder:GetChildren()) do
 						tween555:Play()
 
 					end
-					if v.Name == 'cs' then 
+					if v.Name == "cs" then 
 						v.Value = false 
 					end
 				end
@@ -1286,163 +1307,169 @@ end
 local pluginData = nil
 local plginCount = 0
 
-for index,plgin in pairs(pluginTable) do
+local LoadPluginsFromTable = function(ptbl)
+	if ptbl == nil then return end
+	for index,plgin in pairs(ptbl) do
 
-	plginCount += 1
+		plginCount += 1
 
-	local pluginFrameClone = mainFrame.ListHolder.Plugins.List.UIGridLayout.Template:Clone()
+		local pluginFrameClone = mainFrame.ListHolder.Plugins.List.UIGridLayout.Template:Clone()
 
-	pluginFrameClone.Name = tostring(plgin.Name .. ' ' .. plgin.Creator .. ' ' .. plgin.CreationDate)
-	pluginFrameClone.Author.Text = plgin.Creator
-	pluginFrameClone.PluginName.Text = plgin.Name
-	pluginFrameClone.Created.Text = plgin.CreationDate
+		pluginFrameClone.Name = tostring(plgin.Name .. " " .. plgin.Creator .. " " .. plgin.CreationDate)
+		pluginFrameClone.Author.Text = plgin.Creator
+		pluginFrameClone.PluginName.Text = plgin.Name
+		pluginFrameClone.Created.Text = plgin.CreationDate
 
-	if isfile(plgin.Name .. '.iy') then
-		pluginFrameClone.Install.Text = 'Uninstall'
-		for i,v in pairs(pluginFrameClone:GetChildren()) do
-			tweenColor3(pluginFrameClone,Color3.fromRGB(3, 31, 6),.2)
-			if v:IsA('TextLabel') or v:IsA('TextButton') then
-				tweenColor3(v,Color3.fromRGB(23, 52, 30),.2)
+		if isfile(plgin.Name .. ".iy") then
+			pluginFrameClone.Install.Text = "Uninstall"
+			for i,v in pairs(pluginFrameClone:GetChildren()) do
+				tweenColor3(pluginFrameClone, Color3.fromRGB(3, 31, 6), 0.2)
+				if v:IsA("TextLabel") or v:IsA("TextButton") then
+					tweenColor3(v, Color3.fromRGB(23, 52, 30), 0.2)
+				end
 			end
 		end
-	end
 
-	pluginFrameClone.Install.MouseButton1Click:Connect(function()
-		if installDebounce == false then installDebounce = true
+		pluginFrameClone.Install.MouseButton1Click:Connect(function()
+			if installDebounce == false then installDebounce = true
 
-			local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or getgenv().request or request
-			local Response = requestfunc({
-				Url = plgin.GithubLink,
-				Method = "GET"
-			})
-			pluginData = Response.Body
+				local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or getgenv().request or request
+				local Response = requestfunc({
+					Url = plgin.GithubLink,
+					Method = "GET"
+				})
+				pluginData = Response.Body
 
-			if isfile(plgin.Name .. '.iy') == true then
+				if isfile(plgin.Name .. ".iy") == true then
 
-				pluginFrameClone.Install.Text = 'Uninstalling'
-				deletePlugin(plgin.Name)
-				delfile(plgin.Name .. '.iy')
-				pluginFrameClone.Install.Text = 'Success'
-				task.wait(.5)
-				pluginFrameClone.Install.Text = 'Install'
+					pluginFrameClone.Install.Text = "Uninstalling"
+					deletePlugin(plgin.Name)
+					delfile(plgin.Name .. ".iy")
+					pluginFrameClone.Install.Text = "Success"
+					task.wait(0.5)
+					pluginFrameClone.Install.Text = "Install"
 
-				for i,v in pairs(pluginFrameClone:GetChildren()) do
-					tweenColor3(pluginFrameClone,Color3.fromRGB(22, 22, 22),.2)
-					if v:IsA('TextLabel') or v:IsA('TextButton') then
-						tweenColor3(v,Color3.fromRGB(42, 42, 42),.2)
+					for i,v in pairs(pluginFrameClone:GetChildren()) do
+						tweenColor3(pluginFrameClone, Color3.fromRGB(22, 22, 22), 0.2)
+						if v:IsA("TextLabel") or v:IsA("TextButton") then
+							tweenColor3(v, Color3.fromRGB(42, 42, 42), 0.2)
+						end
+					end
+
+				else
+
+					pluginFrameClone.Install.Text = "Installing"
+					writefile(plgin.Name .. ".iy", pluginData)
+					addPlugin(plgin.Name)
+					pluginFrameClone.Install.Text = "Success"
+					task.wait(0.5)
+					pluginFrameClone.Install.Text = "Uninstall"
+
+					for i,v in pairs(pluginFrameClone:GetChildren()) do
+						tweenColor3(pluginFrameClone, Color3.fromRGB(3, 31, 6), 0.2)
+						if v:IsA("TextLabel") or v:IsA("TextButton") then
+							tweenColor3(v, Color3.fromRGB(23, 52, 30), 0.2)
+						end
+					end
+
+				end
+
+				installDebounce = false
+
+			end
+		end)
+
+		pluginFrameClone.PluginName.InfoBtn.MouseButton1Click:Connect(function()
+			if pluginFrameClone.PluginName.InfoBtn.ImageColor3 ~= Color3.fromRGB(255, 255, 255) then
+				mainFrame.PluginInfo.PluginInfo.PluginName.Text = plgin.Name
+
+				for i,v in pairs(mainFrame.ListHolder.Plugins:GetDescendants()) do
+					if v.Name == "InfoBtn" and v.Parent.Parent.Parent.Name ~= "UIGridLayout" then
+						tweenColor(v, Color3.fromRGB(98, 98, 98), v.ImageColor3, 0.2)
 					end
 				end
+
+				tweenColor(pluginFrameClone.PluginName.InfoBtn, Color3.fromRGB(255, 255, 255), pluginFrameClone.PluginName.InfoBtn.ImageColor3, 0.2)
+
+				for i,v in pairs(mainFrame.PluginInfo.List:GetChildren()) do
+					if v:IsA("TextLabel") then
+						v:Destroy()
+					end
+				end
+
+				for i,v in pairs(plgin.Commands) do
+					local tLabelClone = mainFrame.PluginInfo.List.UIGridLayout.Command:Clone()
+					tLabelClone.Name = v
+					tLabelClone.Text = ";" .. v
+					tLabelClone.Parent = mainFrame.PluginInfo.List
+				end
+
+				pluginInfoToggle(true)
 
 			else
 
-				pluginFrameClone.Install.Text = 'Installing'
-				writefile(plgin.Name .. '.iy', pluginData)
-				addPlugin(plgin.Name)
-				pluginFrameClone.Install.Text = 'Success'
-				task.wait(.5)
-				pluginFrameClone.Install.Text = 'Uninstall'
-
-				for i,v in pairs(pluginFrameClone:GetChildren()) do
-					tweenColor3(pluginFrameClone,Color3.fromRGB(3, 31, 6),.2)
-					if v:IsA('TextLabel') or v:IsA('TextButton') then
-						tweenColor3(v,Color3.fromRGB(23, 52, 30),.2)
-					end
-				end
+				pluginInfoToggle(false)
+				tweenColor(pluginFrameClone.PluginName.InfoBtn, Color3.fromRGB(98, 98, 98), pluginFrameClone.PluginName.InfoBtn.ImageColor3, 0.5)
 
 			end
+		end)
 
-			installDebounce = false
-
-		end
-	end)
-
-	pluginFrameClone.PluginName.InfoBtn.MouseButton1Click:Connect(function()
-		if pluginFrameClone.PluginName.InfoBtn.ImageColor3 ~= Color3.fromRGB(255, 255, 255) then
-			mainFrame.PluginInfo.PluginInfo.PluginName.Text = plgin.Name
-
-			for i,v in pairs(mainFrame.ListHolder.Plugins:GetDescendants()) do
-				-- if (v.Name == 'InfoBtn') and (not v.Parent.Parent.Parent:IsA('UIGridLayout')) then
-				if v.Name == 'InfoBtn' and v.Parent.Parent.Parent.Name ~= 'UIGridLayout' then
-					tweenColor(v, Color3.fromRGB(98, 98, 98), v.ImageColor3, 0.2)
-				end
-			end
-
-			tweenColor(pluginFrameClone.PluginName.InfoBtn, Color3.fromRGB(255, 255, 255), pluginFrameClone.PluginName.InfoBtn.ImageColor3, 0.2)
-
-			for i,v in pairs(mainFrame.PluginInfo.List:GetChildren()) do
-				if v:IsA('TextLabel') then
-					v:Destroy()
-				end
-			end
-
-			for i,v in pairs(plgin.Commands) do
-				local tLabelClone = mainFrame.PluginInfo.List.UIGridLayout.Command:Clone()
-				tLabelClone.Name = v
-				tLabelClone.Text = ';' .. v
-				tLabelClone.Parent = mainFrame.PluginInfo.List
-			end
-
-			pluginInfoToggle(true)
-
-		else
-
-			pluginInfoToggle(false)
-			tweenColor(pluginFrameClone.PluginName.InfoBtn, Color3.fromRGB(98, 98, 98), pluginFrameClone.PluginName.InfoBtn.ImageColor3, 0.5)
-
-		end
-	end)
-
-	pluginFrameClone.Parent = mainFrame.ListHolder.Plugins.List
-end
-
-
-local settingsList = mainFrame.ListHolder.Settings.List
-local nsfwPluginsTable = IS_Settings["NsfwPlugins"]
-
-function cleanPluginCheck()
-	if _UserSettings.CleanPlugins == true then
-		for index,plgin in pairs(nsfwPluginsTable) do
-			mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. ' ' .. plgin.Creator .. ' ' .. plgin.CreationDate)].Visible = false
-		end
-	else
-		for index,plgin in pairs(nsfwPluginsTable) do
-			mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. ' ' .. plgin.Creator .. ' ' .. plgin.CreationDate)].Visible = true
-		end
+		pluginFrameClone.Parent = mainFrame.ListHolder.Plugins.List
 	end
 end
+
+LoadPluginsFromTable(IS_Settings["Plugins"])
+LoadPluginsFromTable(nsfwPluginsTable)
+
+
 
 local guiSettings = {
-	["Auto Visible"] = {
-		["Name"] = "Auto Visible",
-		["Description"] = "Infinite Store will automatically be visible when executed",
+	["Start Minimized"] = {
+		["Name"] = "Start Minimized",
+		["Description"] = "Infinite Store will be hidden when executed.",
 		["SettingFunction"] = function()
-			if _UserSettings.AutoVisible == true then
-				checkBoxHandler(false, settingsList["AutoVisible"].CheckBox)
-				_UserSettings.AutoVisible = false
+			if _UserSettings.StartMinimized == true then
+				checkBoxHandler(false, settingsList["StartMinimized"].CheckBox)
+				_UserSettings.StartMinimized = false
 			else
-				checkBoxHandler(true, settingsList["AutoVisible"].CheckBox)
-				_UserSettings.AutoVisible = true
+				checkBoxHandler(true, settingsList["StartMinimized"].CheckBox)
+				_UserSettings.StartMinimized = true
 			end
 			UpdateSettings()
 		end,
 	},
 
-	["Clean Plugins"] = {
-		["Name"] = "Clean Plugins",
-		["Description"] = "Hide NSFW plugins",
+	["Safe Mode"] = {
+		["Name"] = "Safe Mode",
+		["Description"] = "Hide NSFW plugins.",
 		["SettingFunction"] = function()
-			if _UserSettings.CleanPlugins == true then
-				checkBoxHandler(false, settingsList["CleanPlugins"].CheckBox)
-				_UserSettings.CleanPlugins = false
+			if _UserSettings.SafeMode == true then
+				checkBoxHandler(false, settingsList["SafeMode"].CheckBox)
+				_UserSettings.SafeMode = false
 				for index,plgin in pairs(nsfwPluginsTable) do
-					mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. ' ' .. plgin.Creator .. ' ' .. plgin.CreationDate)].Visible = true
+					mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. " " .. plgin.Creator .. " " .. plgin.CreationDate)].Visible = true
 				end
 			else
-				checkBoxHandler(true, settingsList["CleanPlugins"].CheckBox)
-				_UserSettings.CleanPlugins = true
+				checkBoxHandler(true, settingsList["SafeMode"].CheckBox)
+				_UserSettings.SafeMode = true
 				for index,plgin in pairs(nsfwPluginsTable) do
-					mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. ' ' .. plgin.Creator .. ' ' .. plgin.CreationDate)].Visible = false
+					mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. " " .. plgin.Creator .. " " .. plgin.CreationDate)].Visible = false
 				end
+			end
+			UpdateSettings()
+		end,
+	},
+	
+	["No Notifications"] = {
+		["Name"] = "No Notifications",
+		["Description"] = "Infinite Store will not give you Infinite Yield notifications.",
+		["SettingFunction"] = function()
+			if _UserSettings.NoNotifications == true then
+				checkBoxHandler(false, settingsList["NoNotifications"].CheckBox)
+				_UserSettings.NoNotifications = false
+			else
+				checkBoxHandler(true, settingsList["NoNotifications"].CheckBox)
+				_UserSettings.NoNotifications = true
 			end
 			UpdateSettings()
 		end,
@@ -1470,4 +1497,4 @@ for index,val in pairs(_UserSettings) do
 	end
 end
 
-
+cleanPluginCheck()
