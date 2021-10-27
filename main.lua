@@ -1419,7 +1419,7 @@ local LoadPluginsFromTable = function(ptbl)
 	end
 end
 
-LoadPluginsFromTable(IS_Settings["Plugins"])
+LoadPluginsFromTable(IS_Settings["DB"])
 LoadPluginsFromTable(nsfwPluginsTable)
 
 
