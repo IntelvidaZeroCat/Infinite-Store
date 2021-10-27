@@ -5,9 +5,8 @@ local IS_Settings
 IS_Settings = {
 	["Version"] = ("1.3.1"),
 	["Invite"] = ("mVzBU7GTMy"),
-	["Domain"] = ("https://raw.githubusercontent.com/Infinite-Store/Infinite-Store/main/"),
-	["Plugins"] = loadstring(game:HttpGet((IS_Settings["Domain"] .. "db.lua"), true))(),
-	["NsfwPlugins"] = loadstring(game:HttpGet((IS_Settings["Domain"] .. "plugins/nsfwplugins/db.lua"), true))()
+	["DB"] = "https://raw.githubusercontent.com/Infinite-Store/Infinite-Store/main/db.lua",
+	["nsfwDB"] = loadstring(game:HttpGet((IS_Settings["Domain"] .. "plugins/nsfwplugins/db.lua"), true))()
 }
 
 
@@ -1190,16 +1189,16 @@ local tweenColor3 = function(instance, rgb, t1me)
 end
 
 local settingsList = mainFrame.ListHolder.Settings.List
-local nsfwPluginsTable = IS_Settings["NsfwPlugins"]
+local nsfwPluginsTable = IS_Settings["nsfwDB"]
 
 local cleanPluginCheck = function()
 	if _UserSettings.SafeMode == true then
-		for index,plgin in pairs(nsfwPluginsTable) do
-			mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. " " .. plgin.Creator .. " " .. plgin.CreationDate)].Visible = false
+		for index,plugin in pairs(nsfwPluginsTable) do
+			mainFrame.ListHolder.Plugins.List[tostring(plugin.Name .. " " .. plugin.Creator .. " " .. plugin.CreationDate)].Visible = false
 		end
 	else
-		for index,plgin in pairs(nsfwPluginsTable) do
-			mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. " " .. plgin.Creator .. " " .. plgin.CreationDate)].Visible = true
+		for index,plugin in pairs(nsfwPluginsTable) do
+			mainFrame.ListHolder.Plugins.List[tostring(plugin.Name .. " " .. plugin.Creator .. " " .. plugin.CreationDate)].Visible = true
 		end
 	end
 end
@@ -1307,22 +1306,22 @@ end
 
 
 local pluginData = nil
-local plginCount = 0
+local pluginCount = 0
 
 local LoadPluginsFromTable = function(ptbl)
 	if ptbl == nil then return end
-	for index,plgin in pairs(ptbl) do
+	for index,plugin in pairs(ptbl) do
 
-		plginCount += 1
+		pluginCount += 1
 
 		local pluginFrameClone = mainFrame.ListHolder.Plugins.List.UIGridLayout.Template:Clone()
 
-		pluginFrameClone.Name = tostring(plgin.Name .. " " .. plgin.Creator .. " " .. plgin.CreationDate)
-		pluginFrameClone.Author.Text = plgin.Creator
-		pluginFrameClone.PluginName.Text = plgin.Name
-		pluginFrameClone.Created.Text = plgin.CreationDate
+		pluginFrameClone.Name = tostring(plugin.Name .. " " .. plugin.Creator .. " " .. plugin.CreationDate)
+		pluginFrameClone.Author.Text = plugin.Creator
+		pluginFrameClone.PluginName.Text = plugin.Name
+		pluginFrameClone.Created.Text = plugin.CreationDate
 
-		if isfile(plgin.Name .. ".iy") then
+		if isfile(plugin.Name .. ".iy") then
 			pluginFrameClone.Install.Text = "Uninstall"
 			for i,v in pairs(pluginFrameClone:GetChildren()) do
 				tweenColor3(pluginFrameClone, Color3.fromRGB(3, 31, 6), 0.2)
@@ -1337,16 +1336,16 @@ local LoadPluginsFromTable = function(ptbl)
 
 				local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or getgenv().request or request
 				local Response = requestfunc({
-					Url = IS_Settings["Domain"] .. "plugins/" .. plgin.GithubLink,
+					URL = plugin.URL,
 					Method = "GET"
 				})
 				pluginData = Response.Body
 
-				if isfile(plgin.Name .. ".iy") == true then
+				if isfile(plugin.Name .. ".iy") == true then
 
 					pluginFrameClone.Install.Text = "Uninstalling"
-					deletePlugin(plgin.Name)
-					delfile(plgin.Name .. ".iy")
+					deletePlugin(plugin.Name)
+					delfile(plugin.Name .. ".iy")
 					pluginFrameClone.Install.Text = "Success"
 					task.wait(0.5)
 					pluginFrameClone.Install.Text = "Install"
@@ -1361,8 +1360,8 @@ local LoadPluginsFromTable = function(ptbl)
 				else
 
 					pluginFrameClone.Install.Text = "Installing"
-					writefile(plgin.Name .. ".iy", pluginData)
-					addPlugin(plgin.Name)
+					writefile(plugin.Name .. ".iy", pluginData)
+					addPlugin(plugin.Name)
 					pluginFrameClone.Install.Text = "Success"
 					task.wait(0.5)
 					pluginFrameClone.Install.Text = "Uninstall"
@@ -1383,7 +1382,7 @@ local LoadPluginsFromTable = function(ptbl)
 
 		pluginFrameClone.PluginName.InfoBtn.MouseButton1Click:Connect(function()
 			if pluginFrameClone.PluginName.InfoBtn.ImageColor3 ~= Color3.fromRGB(255, 255, 255) then
-				mainFrame.PluginInfo.PluginInfo.PluginName.Text = plgin.Name
+				mainFrame.PluginInfo.PluginInfo.PluginName.Text = plugin.Name
 
 				for i,v in pairs(mainFrame.ListHolder.Plugins:GetDescendants()) do
 					if v.Name == "InfoBtn" and v.Parent.Parent.Parent.Name ~= "UIGridLayout" then
@@ -1399,7 +1398,7 @@ local LoadPluginsFromTable = function(ptbl)
 					end
 				end
 
-				for i,v in pairs(plgin.Commands) do
+				for i,v in pairs(plugin.Commands) do
 					local tLabelClone = mainFrame.PluginInfo.List.UIGridLayout.Command:Clone()
 					tLabelClone.Name = v
 					tLabelClone.Text = ";" .. v
@@ -1448,14 +1447,14 @@ local guiSettings = {
 			if _UserSettings.SafeMode == true then
 				checkBoxHandler(false, settingsList["SafeMode"].CheckBox)
 				_UserSettings.SafeMode = false
-				for index,plgin in pairs(nsfwPluginsTable) do
-					mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. " " .. plgin.Creator .. " " .. plgin.CreationDate)].Visible = true
+				for index,plugin in pairs(nsfwPluginsTable) do
+					mainFrame.ListHolder.Plugins.List[tostring(plugin.Name .. " " .. plugin.Creator .. " " .. plugin.CreationDate)].Visible = true
 				end
 			else
 				checkBoxHandler(true, settingsList["SafeMode"].CheckBox)
 				_UserSettings.SafeMode = true
-				for index,plgin in pairs(nsfwPluginsTable) do
-					mainFrame.ListHolder.Plugins.List[tostring(plgin.Name .. " " .. plgin.Creator .. " " .. plgin.CreationDate)].Visible = false
+				for index,plugin in pairs(nsfwPluginsTable) do
+					mainFrame.ListHolder.Plugins.List[tostring(plugin.Name .. " " .. plugin.Creator .. " " .. plugin.CreationDate)].Visible = false
 				end
 			end
 			UpdateSettings()
