@@ -5,7 +5,7 @@ local IS_Settings
 IS_Settings = {
 	["Version"] = ("1.3.1"),
 	["Invite"] = ("mVzBU7GTMy"),
-	["DB"] = ("https://raw.githubusercontent.com/Infinite-Store/Infinite-Store/main/db.lua"),
+	["DB"] = loadstring(game:HttpGet(("https://raw.githubusercontent.com/Infinite-Store/Infinite-Store/main/db.lua"), true))(),
 	["nsfwDB"] = loadstring(game:HttpGet(("https://raw.githubusercontent.com/Infinite-Store/Infinite-Store/main/plugins/nsfwplugins/db.lua"), true))()
 }
 
