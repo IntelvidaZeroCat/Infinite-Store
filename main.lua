@@ -1,11 +1,13 @@
 local reqenv = function() return (getgenv() or _G) end
 
 
-local IS_Settings = {
+local IS_Settings
+IS_Settings = {
 	["Version"] = ("1.3.1"),
 	["Invite"] = ("mVzBU7GTMy"),
-	["Plugins"] = loadstring(game:HttpGet(("https://raw.githubusercontent.com/Infinite-Store/Infinite-Store/main/db.lua"), true))(),
-	["NsfwPlugins"] = loadstring(game:HttpGet(("https://raw.githubusercontent.com/Infinite-Store/Infinite-Store/main/plugins/nsfwplugins/db.lua"), true))()
+	["Domain"] = ("https://raw.githubusercontent.com/Infinite-Store/Infinite-Store/main/"),
+	["Plugins"] = loadstring(game:HttpGet((IS_Settings["Domain"] .. "db.lua"), true))(),
+	["NsfwPlugins"] = loadstring(game:HttpGet((IS_Settings["Domain"] .. "plugins/nsfwplugins/db.lua"), true))()
 }
 
 
@@ -1335,7 +1337,7 @@ local LoadPluginsFromTable = function(ptbl)
 
 				local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or getgenv().request or request
 				local Response = requestfunc({
-					Url = plgin.GithubLink,
+					Url = IS_Settings["Domain"] .. "plugins/" .. plgin.GithubLink,
 					Method = "GET"
 				})
 				pluginData = Response.Body
